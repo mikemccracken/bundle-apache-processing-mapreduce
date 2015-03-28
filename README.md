@@ -77,7 +77,8 @@ directory and serve them all with a single `juju resources serve` instance.
 - [Apache Hadoop](http://hadoop.apache.org/) home page
 - [Apache Hadoop bug tracker](http://hadoop.apache.org/issue_tracking.html)
 - [Apache Hadoop mailing lists](http://hadoop.apache.org/mailing_lists.html)
-- [Apache Hadoop Juju Charms](http://jujucharms.com/?text=apache-hadoop)
+- [Apache Hadoop charms](http://jujucharms.com/?text=apache-hadoop)
+- [Juju Big Data bug tracker](https://bugs.launchpad.net/charms/+source/apache-core-batch-processing/+filebug)
 - [Juju mailing list](https://lists.ubuntu.com/mailman/listinfo/juju)
 - [Juju community](https://jujucharms.com/community)
 
