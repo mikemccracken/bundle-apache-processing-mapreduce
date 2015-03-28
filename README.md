@@ -13,23 +13,27 @@ which may be prone to failures.
 
 This bundle provides a complete deployment of the core components of the
 [Apache Hadoop 2.4.1](http://hadoop.apache.org/docs/r2.4.1/)
-platform to perform distributed data analytics at scale.  Deploying this
-bundle gives you a fully configured and connected Apache Hadoop cluster
-on any supported cloud, which can be easily scaled to meet workload demands.
+platform to perform distributed data analytics at scale.  These components
+include: HDFS master (NameNode), YARN master (ResourceManager), Secondary
+NameNode, compute slaves (DataNode and NodeManager), and a client node.
+Deploying this bundle gives you a fully configured and connected Apache Hadoop
+cluster on any supported cloud, which can be easily scaled to meet workload
+demands.
 
 
 ## Deploying this bundle
 
-In this deployment, the HDFS master, YARN master, compute nodes, and
-HDFS SecondaryNameNode are deployed on separate machines.
+In this deployment, the aforementioned components are deployed on separate units.
+To deploy this bundle, simply use:
 
     juju quickstart apache-core-batch-processing
 
-This starts with two compute nodes.  To add additional compute nodes, simply
-use `juju add-unit`.  For example, to add two additional compute nodes (bringing
-the total to four):
+This starts with three compute nodes, and one node of each other service.
+To scale the cluster, use:
 
     juju add-unit compute-slave -n 2
+
+This will add two additional compute-slave nodes, for a total of five.
 
 
 ## Deploying in Network-Restricted Environments
