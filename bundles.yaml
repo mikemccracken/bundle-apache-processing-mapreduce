@@ -23,18 +23,18 @@ apache-core-batch-processing:
       charm: "cs:~bigdata-dev/trusty/apache-hadoop-compute-slave"
       num_units: 3
       annotations:
-        "gui-x": "900"
+        "gui-x": "300"
         "gui-y": "200"
     "client":
       charm: "cs:~bigdata-dev/trusty/apache-hadoop-client"
       num_units: 1
       annotations:
-        "gui-x": "300"
+        "gui-x": "900"
         "gui-y": "100"
     "plugin":
       charm: "cs:~bigdata-dev/trusty/apache-hadoop-plugin"
       annotations:
-        "gui-x": "300"
+        "gui-x": "900"
         "gui-y": "350"
   relations:
     - [yarn-master, hdfs-master]
