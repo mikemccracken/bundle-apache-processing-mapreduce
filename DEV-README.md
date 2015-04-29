@@ -15,21 +15,21 @@ charm connecting to HDFS and YARN via standard relations.
 
 ## Subordinate Charm Connection
 
-By connecting to the [client charm](https://jujucharms.com/apache-hadoop-client)
-via the `hadoop-client` subordinate relation, a charm will get access to a
+By connecting to the [plugin charm](https://jujucharms.com/apache-hadoop-plugin)
+via the `hadoop-plugin` subordinate relation, a charm will get access to a
 pre-configured Apache Hadoop environment, including Java libraries and the
 `hdfs` command-line utility.  The `/etc/environment` file on the client unit
 will have all of the path and configuration variables defined.
 
 The details of the interface protocol used by this relation are documented in
-the DEV-README.md of the [client charm](https://jujucharms.com/apache-hadoop-client).
+the DEV-README.md of the [plugin charm](https://jujucharms.com/apache-hadoop-plugin).
 
 For example, to deploy [apache-hive](https://jujucharms.com/apache-hive) with
 this bundle, you would use:
 
     juju quickstart apache-core-batch-processing
     juju deploy cs:trusty/apache-hive
-    juju add-relation apache-hive client
+    juju add-relation apache-hive plugin
 
 This workflow has been bundled and is available as
 [apache-hadoop-analytics-sql](https://jujucharms.com/apache-hadoop-analytics-sql).

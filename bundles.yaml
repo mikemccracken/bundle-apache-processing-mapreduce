@@ -31,6 +31,11 @@ apache-core-batch-processing:
       annotations:
         "gui-x": "300"
         "gui-y": "200"
+    "plugin":
+      charm: "cs:~bigdata-dev/trusty/apache-hadoop-plugin"
+      annotations:
+        "gui-x": "300"
+        "gui-y": "200"
   relations:
     - [yarn-master, hdfs-master]
     - [secondary-namenode, hdfs-master]
@@ -38,3 +43,5 @@ apache-core-batch-processing:
     - [compute-slave, hdfs-master]
     - [client, yarn-master]
     - [client, hdfs-master]
+    - [plugin, yarn-master]
+    - [plugin, hdfs-master]
