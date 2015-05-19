@@ -9,8 +9,8 @@ functionality.
 # Building on this Bundle
 
 This bundle supports two ways to extend its functionality via additonal charms:
-by deploying to the client node using a subordinate relation, or a stand-alone
-charm connecting to HDFS and YARN via standard relations.
+by relating to the subordinate `apache-hadoop-plugin` charm, or by using a
+stand-alone charm connecting to HDFS and YARN via standard relations.
 
 
 ## Subordinate Charm Connection
@@ -18,8 +18,8 @@ charm connecting to HDFS and YARN via standard relations.
 By connecting to the [plugin charm](https://jujucharms.com/apache-hadoop-plugin)
 via the `hadoop-plugin` subordinate relation, a charm will get access to a
 pre-configured Apache Hadoop environment, including Java libraries and the
-`hdfs` command-line utility.  The `/etc/environment` file on the client unit
-will have all of the path and configuration variables defined.
+`hdfs` command-line utility.  The `/etc/environment` file on the unit will
+have all of the path and configuration variables defined.
 
 The details of the interface protocol used by this relation are documented in
 the DEV-README.md of the [plugin charm](https://jujucharms.com/apache-hadoop-plugin).
@@ -32,7 +32,7 @@ this bundle, you would use:
     juju add-relation apache-hive plugin
 
 This workflow has been bundled and is available as
-[apache-hadoop-analytics-sql](https://jujucharms.com/apache-hadoop-analytics-sql).
+[apache-analytics-sql](https://jujucharms.com/apache-analytics-sql).
 
 
 ## Stand-alone Charm Connection
@@ -53,9 +53,6 @@ this bundle, you would use:
     juju deploy cs:trusty/apache-hue
     juju add-relation apache-hue hdfs-master
 
-This workflow has been bundled and is available as
-[apache-hadoop-visualization](https://jujucharms.com/apache-hadoop-visualization).
-
 
 # Component Services
 
@@ -67,7 +64,7 @@ see each charm's DEV-README.md):
   This service runs the NameNode component.
 
 * [**secondary-namenode**](https://jujucharms.com/apache-hadoop-hdfs-secondary)
-  This service runs the SecondaryNameNode component.
+  This service runs the Secondary NameNode component.
 
 * [**yarn-master**](https://jujucharms.com/apache-hadoop-yarn-master)
   This service runs the ResourceManager component.

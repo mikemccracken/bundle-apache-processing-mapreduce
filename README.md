@@ -23,13 +23,17 @@ demands.
 
 ## Deploying this bundle
 
-In this deployment, the aforementioned components are deployed on separate units.
-To deploy this bundle, simply use:
+In this deployment, the aforementioned components are deployed on separate
+units. To deploy this bundle, simply use:
 
-    juju quickstart apache-core-batch-processing
+    juju quickstart u/bigdata-dev/apache-core-batch-processing
 
-This starts with three compute nodes, and one node of each other service.
-To scale the cluster, use:
+See `juju quickstart --help` for deployment options, including machine
+constraints and how to deploy a locally modified version of the
+apache-core-batch-processing bundle.yaml.
+
+The default bundle deploys three compute-slave nodes and one node of each of
+the other services. To scale the cluster, use:
 
     juju add-unit compute-slave -n 2
 
@@ -65,12 +69,12 @@ have the charm use this server for retrieving resources.
 
 You can fetch the resources for all of the Apache Hadoop charms
 (`apache-hadoop-hdfs-master`, `apache-hadoop-yarn-master`,
-`apache-hadoop-compute-slave`, `apache-hadoop-client`, etc) into a single
+`apache-hadoop-compute-slave`, `apache-hadoop-plugin`, etc) into a single
 directory and serve them all with a single `juju resources serve` instance.
 
 ## Contact Information
 
-[bigdata-dev@canonical.com](mailto:bigdata-dev@canonical.com)
+- [bigdata-dev@canonical.com](mailto:bigdata-dev@canonical.com)
 
 
 ## Resources
