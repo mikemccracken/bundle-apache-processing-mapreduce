@@ -74,8 +74,7 @@ directory and serve them all with a single `juju resources serve` instance.
 
 ## Contact Information
 
-- [bigdata-dev@canonical.com](mailto:bigdata-dev@canonical.com)
-
+- [bigdata-dev@lists.launchpad.net](mailto:bigdata-dev@lists.launchpad.net)
 
 ## Resources
 - [Apache Hadoop](http://hadoop.apache.org/) home page
