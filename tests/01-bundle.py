@@ -12,8 +12,8 @@ class Base(object):
     """
     Base class for tests for Apache Hadoop Bundle.
     """
-    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundles.yaml')
-    profile_name = None  # subclass must define
+    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle.yaml')
+    profile_name = None
 
     @classmethod
     def deploy(cls):
@@ -32,6 +32,7 @@ class Base(object):
         cls.yarn = cls.d.sentry.unit['yarn-master/0']
         cls.slave = cls.d.sentry.unit['compute-slave/0']
         cls.secondary = cls.d.sentry.unit['secondary-namenode/0']
+        cls.plugin = cls.d.sentry.unit['plugin/0']
         cls.client = cls.d.sentry.unit['client/0']
 
     @classmethod
@@ -39,7 +40,7 @@ class Base(object):
         # classmethod inheritance doesn't work quite right with
         # setUpClass / tearDownClass, so subclasses have to manually call this
         juju_env = amulet.helpers.default_environment()
-        services = ['hdfs-master', 'yarn-master', 'compute-slave', 'secondary-namenode', 'client']
+        services = ['hdfs-master', 'yarn-master', 'compute-slave', 'secondary-namenode', 'plugin', 'client']
 
         def check_env_clear():
             state = amulet.waiter.state(juju_env=juju_env)

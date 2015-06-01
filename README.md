@@ -72,9 +72,11 @@ You can fetch the resources for all of the Apache Hadoop charms
 `apache-hadoop-compute-slave`, `apache-hadoop-plugin`, etc) into a single
 directory and serve them all with a single `juju resources serve` instance.
 
+
 ## Contact Information
 
-- [bigdata-dev@lists.launchpad.net](mailto:bigdata-dev@lists.launchpad.net)
+- <bigdata-dev@lists.launchpad.net>
+
 
 ## Resources
 - [Apache Hadoop](http://hadoop.apache.org/) home page
