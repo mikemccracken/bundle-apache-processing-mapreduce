@@ -12,7 +12,8 @@ class Base(object):
     """
     Base class for tests for Apache Hadoop Bundle.
     """
-    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle.yaml')
+    # have to use the v3 format because that's what amulet supports
+    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundles_v3.yaml')
     profile_name = None
 
     @classmethod
@@ -22,17 +23,14 @@ class Base(object):
         cls.d = amulet.Deployment(series='trusty')
         with open(cls.bundle_file) as f:
             bun = f.read()
-        profiles = yaml.safe_load(bun)
-        # amulet always selects the first profile, so we have to fudge it here
-        profile = {cls.profile_name: profiles[cls.profile_name]}
-        cls.d.load(profile)
+        bundle = yaml.safe_load(bun)
+        cls.d.load(bundle)
         cls.d.setup(timeout=9000)
         cls.d.sentry.wait()
         cls.hdfs = cls.d.sentry.unit['hdfs-master/0']
         cls.yarn = cls.d.sentry.unit['yarn-master/0']
         cls.slave = cls.d.sentry.unit['compute-slave/0']
         cls.secondary = cls.d.sentry.unit['secondary-namenode/0']
-        cls.plugin = cls.d.sentry.unit['plugin/0']
         cls.client = cls.d.sentry.unit['client/0']
 
     @classmethod
@@ -117,8 +115,6 @@ class Base(object):
 
 
 class TestScalable(unittest.TestCase, Base):
-    profile_name = 'apache-core-batch-processing'
-
     @classmethod
     def setUpClass(cls):
         cls.deploy()
