@@ -60,17 +60,19 @@ is not available, the `jujuresources` library makes it easy to create a mirror
 of these resources:
 
     sudo pip install jujuresources
-    juju resources fetch --all apache-hadoop-client/resources.yaml -d /tmp/resources
-    juju resources serve -d /tmp/resources
+    juju-resources fetch --all /path/to/resources.yaml -d /tmp/resources
+    juju-resources serve -d /tmp/resources
 
-This will fetch all of the resources needed by this charm and serve them via a
-simple HTTP server. You can then set the `resources_mirror` config option to
-have the charm use this server for retrieving resources.
+This will fetch all of the resources needed by a charm and serve them via a
+simple HTTP server. The output from `juju-resources serve` will give you a
+URL that you can set as the `resources_mirror` config option for that charm.
+Setting this option will cause all resources required by the charm to be
+downloaded from the configured URL.
 
 You can fetch the resources for all of the Apache Hadoop charms
 (`apache-hadoop-hdfs-master`, `apache-hadoop-yarn-master`,
 `apache-hadoop-compute-slave`, `apache-hadoop-plugin`, etc) into a single
-directory and serve them all with a single `juju resources serve` instance.
+directory and serve them all with a single `juju-resources serve` instance.
 
 
 ## Contact Information
@@ -86,4 +88,3 @@ directory and serve them all with a single `juju resources serve` instance.
 - [Juju Big Data bug tracker](https://bugs.launchpad.net/charms/+source/apache-core-batch-processing/+filebug)
 - [Juju mailing list](https://lists.ubuntu.com/mailman/listinfo/juju)
 - [Juju community](https://jujucharms.com/community)
-
