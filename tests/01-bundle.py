@@ -12,7 +12,6 @@ class Base(object):
     """
     Base class for tests for Apache Hadoop Bundle.
     """
-    # have to use the v3 format because that's what amulet supports
     bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle.yaml')
     profile_name = None
 
