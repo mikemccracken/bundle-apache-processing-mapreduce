@@ -24,13 +24,13 @@ class Base(object):
             bun = f.read()
         bundle = yaml.safe_load(bun)
         cls.d.load(bundle)
-        cls.d.setup(timeout=9000)
-        cls.d.sentry.wait()
-        cls.hdfs = cls.d.sentry.unit['hdfs-master/0']
-        cls.yarn = cls.d.sentry.unit['yarn-master/0']
-        cls.slave = cls.d.sentry.unit['compute-slave/0']
-        cls.secondary = cls.d.sentry.unit['secondary-namenode/0']
-        cls.client = cls.d.sentry.unit['client/0']
+        cls.d.setup(timeout=1800)
+        cls.d.sentry.wait_for_messages({'plugin': 'Ready'}, timeout=3600)
+        cls.hdfs = cls.d.sentry['hdfs-master'][0]
+        cls.yarn = cls.d.sentry['yarn-master'][0]
+        cls.slave = cls.d.sentry['compute-slave'][0]
+        cls.secondary = cls.d.sentry['secondary-namenode'][0]
+        cls.client = cls.d.sentry['client'][0]
 
     @classmethod
     def reset_env(cls):
