@@ -1,22 +1,17 @@
 #!/usr/bin/env python3
 
 import os
-import time
 import unittest
 
 import yaml
 import amulet
 
 
-class Base(object):
-    """
-    Base class for tests for Apache Hadoop Bundle.
-    """
+class TestBundle(unittest.TestCase):
     bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle.yaml')
-    profile_name = None
 
     @classmethod
-    def deploy(cls):
+    def setUpClass(cls):
         # classmethod inheritance doesn't work quite right with
         # setUpClass / tearDownClass, so subclasses have to manually call this
         cls.d = amulet.Deployment(series='trusty')
@@ -25,34 +20,14 @@ class Base(object):
         bundle = yaml.safe_load(bun)
         cls.d.load(bundle)
         cls.d.setup(timeout=1800)
-        cls.d.sentry.wait_for_messages({'plugin': 'Ready'}, timeout=3600)
+        cls.d.sentry.wait_for_messages({'plugin': 'Ready'}, timeout=1800)
         cls.hdfs = cls.d.sentry['hdfs-master'][0]
         cls.yarn = cls.d.sentry['yarn-master'][0]
         cls.slave = cls.d.sentry['compute-slave'][0]
         cls.secondary = cls.d.sentry['secondary-namenode'][0]
         cls.client = cls.d.sentry['client'][0]
 
-    @classmethod
-    def reset_env(cls):
-        # classmethod inheritance doesn't work quite right with
-        # setUpClass / tearDownClass, so subclasses have to manually call this
-        juju_env = amulet.helpers.default_environment()
-        services = ['hdfs-master', 'yarn-master', 'compute-slave', 'secondary-namenode', 'plugin', 'client']
-
-        def check_env_clear():
-            state = amulet.waiter.state(juju_env=juju_env)
-            for service in services:
-                if state.get(service, {}) != {}:
-                    return False
-            return True
-
-        for service in services:
-            cls.d.remove(service)
-        with amulet.helpers.timeout(300):
-            while not check_env_clear():
-                time.sleep(5)
-
-    def test_hadoop_components(self):
+    def test_components(self):
         """
         Confirm that all of the required components are up and running.
         """
@@ -64,13 +39,40 @@ class Base(object):
 
         # .NameNode needs the . to differentiate it from SecondaryNameNode
         assert '.NameNode' in hdfs, "NameNode not started"
-        assert 'ResourceManager' in yarn, "ResourceManager not started"
-        assert 'JobHistoryServer' in yarn, "JobHistoryServer not started"
-        assert 'NodeManager' in slave, "NodeManager not started"
-        assert 'DataNode' in slave, "DataServer not started"
-        assert 'SecondaryNameNode' in secondary, "SecondaryNameNode not started"
+        assert '.NameNode' not in yarn, "NameNode should not be running on yarn-master"
+        assert '.NameNode' not in slave, "NameNode should not be running on compute-slave"
+        assert '.NameNode' not in secondary, "NameNode should not be running on secondary-namenode"
+        assert '.NameNode' not in client, "NameNode should not be running on client"
 
-        return hdfs, yarn, slave, secondary, client  # allow subclasses to do additional checks
+        assert 'ResourceManager' in yarn, "ResourceManager not started"
+        assert 'ResourceManager' not in hdfs, "ResourceManager should not be running on hdfs-master"
+        assert 'ResourceManager' not in slave, "ResourceManager should not be running on compute-slave"
+        assert 'ResourceManager' not in secondary, "ResourceManager should not be running on secondary-namenode"
+        assert 'ResourceManager' not in client, "ResourceManager should not be running on client"
+
+        assert 'JobHistoryServer' in yarn, "JobHistoryServer not started"
+        assert 'JobHistoryServer' not in hdfs, "JobHistoryServer should not be running on hdfs-master"
+        assert 'JobHistoryServer' not in slave, "JobHistoryServer should not be running on compute-slave"
+        assert 'JobHistoryServer' not in secondary, "JobHistoryServer should not be running on secondary-namenode"
+        assert 'JobHistoryServer' not in client, "JobHistoryServer should not be running on client"
+
+        assert 'NodeManager' in slave, "NodeManager not started"
+        assert 'NodeManager' not in yarn, "NodeManager should not be running on yarn-master"
+        assert 'NodeManager' not in hdfs, "NodeManager should not be running on hdfs-master"
+        assert 'NodeManager' not in secondary, "NodeManager should not be running on secondary-namenode"
+        assert 'NodeManager' not in client, "NodeManager should not be running on client"
+
+        assert 'DataNode' in slave, "DataServer not started"
+        assert 'DataNode' not in yarn, "DataNode should not be running on yarn-master"
+        assert 'DataNode' not in hdfs, "DataNode should not be running on hdfs-master"
+        assert 'DataNode' not in secondary, "DataNode should not be running on secondary-namenode"
+        assert 'DataNode' not in client, "DataNode should not be running on client"
+
+        assert 'SecondaryNameNode' in secondary, "SecondaryNameNode not started"
+        assert 'SecondaryNameNode' not in yarn, "SecondaryNameNode should not be running on yarn-master"
+        assert 'SecondaryNameNode' not in hdfs, "SecondaryNameNode should not be running on hdfs-master"
+        assert 'SecondaryNameNode' not in slave, "SecondaryNameNode should not be running on compute-slave"
+        assert 'SecondaryNameNode' not in client, "SecondaryNameNode should not be running on client"
 
     def test_hdfs_dir(self):
         """
@@ -111,55 +113,6 @@ class Base(object):
         for name, step in test_steps:
             output, retcode = self.client.run(step)
             assert retcode == 0, "{} FAILED:\n{}".format(name, output)
-
-
-class TestScalable(unittest.TestCase, Base):
-    @classmethod
-    def setUpClass(cls):
-        cls.deploy()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.reset_env()
-
-    def test_hadoop_components(self):
-        """
-        In addition to testing that the components are running where they
-        are supposed to be, confirm that none of them are also running where
-        they shouldn't be.
-        """
-        hdfs, yarn, slave, secondary, client = super(TestScalable, self).test_hadoop_components()
-
-        # .NameNode needs the . to differentiate it from SecondaryNameNode
-        assert '.NameNode' not in yarn, "NameNode should not be running on yarn-master"
-        assert '.NameNode' not in slave, "NameNode should not be running on compute-slave"
-        assert '.NameNode' not in secondary, "NameNode should not be running on secondary-namenode"
-        assert '.NameNode' not in client, "NameNode should not be running on client"
-
-        assert 'ResourceManager' not in hdfs, "ResourceManager should not be running on hdfs-master"
-        assert 'ResourceManager' not in slave, "ResourceManager should not be running on compute-slave"
-        assert 'ResourceManager' not in secondary, "ResourceManager should not be running on secondary-namenode"
-        assert 'ResourceManager' not in client, "ResourceManager should not be running on client"
-
-        assert 'JobHistoryServer' not in hdfs, "JobHistoryServer should not be running on hdfs-master"
-        assert 'JobHistoryServer' not in slave, "JobHistoryServer should not be running on compute-slave"
-        assert 'JobHistoryServer' not in secondary, "JobHistoryServer should not be running on secondary-namenode"
-        assert 'JobHistoryServer' not in client, "JobHistoryServer should not be running on client"
-
-        assert 'NodeManager' not in yarn, "NodeManager should not be running on yarn-master"
-        assert 'NodeManager' not in hdfs, "NodeManager should not be running on hdfs-master"
-        assert 'NodeManager' not in secondary, "NodeManager should not be running on secondary-namenode"
-        assert 'NodeManager' not in client, "NodeManager should not be running on client"
-
-        assert 'DataNode' not in yarn, "DataNode should not be running on yarn-master"
-        assert 'DataNode' not in hdfs, "DataNode should not be running on hdfs-master"
-        assert 'DataNode' not in secondary, "DataNode should not be running on secondary-namenode"
-        assert 'DataNode' not in client, "DataNode should not be running on client"
-
-        assert 'SecondaryNameNode' not in yarn, "SecondaryNameNode should not be running on yarn-master"
-        assert 'SecondaryNameNode' not in hdfs, "SecondaryNameNode should not be running on hdfs-master"
-        assert 'SecondaryNameNode' not in slave, "SecondaryNameNode should not be running on compute-slave"
-        assert 'SecondaryNameNode' not in client, "SecondaryNameNode should not be running on client"
 
 
 if __name__ == '__main__':
