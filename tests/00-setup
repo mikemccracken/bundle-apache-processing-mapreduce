@@ -14,5 +14,5 @@ fi
 
 if [[ -n "$to_install" ]]; then
     echo Installing $to_install...
-    sudo apt-get install $to_install
+    sudo apt-get install -y $to_install
 fi
