@@ -11,7 +11,7 @@ services:
     annotations:
       gui-x: "250"
       gui-y: "200"
-    constraints: mem=3G
+    constraints: mem=7G
   hdfs-master:
     charm: cs:~bigdata-dev/trusty/apache-hadoop-hdfs-master
     num_units: 1
