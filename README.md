@@ -12,7 +12,7 @@ highly-availabile service on top of a cluster of computers, each of
 which may be prone to failures.
 
 This bundle provides a complete deployment of the core components of the
-[Apache Hadoop 2.4.1](http://hadoop.apache.org/docs/r2.4.1/)
+[Apache Hadoop 2.7.1](http://hadoop.apache.org/docs/r2.7.1/)
 platform to perform distributed data analytics at scale.  These components
 include: HDFS master (NameNode), YARN master (ResourceManager), Secondary
 NameNode, compute slaves (DataNode and NodeManager), and a client node.
