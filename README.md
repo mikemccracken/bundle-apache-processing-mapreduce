@@ -35,9 +35,9 @@ apache-core-batch-processing bundle.yaml.
 The default bundle deploys three compute-slave nodes and one node of each of
 the other services. To scale the cluster, use:
 
-    juju add-unit compute-slave -n 2
+    juju add-unit slave -n 2
 
-This will add two additional compute-slave nodes, for a total of five.
+This will add two additional slave nodes, for a total of five.
 
 
 ## Deploying in Network-Restricted Environments
@@ -70,14 +70,14 @@ Setting this option will cause all resources required by the charm to be
 downloaded from the configured URL.
 
 You can fetch the resources for all of the Apache Hadoop charms
-(`apache-hadoop-hdfs-master`, `apache-hadoop-yarn-master`,
-`apache-hadoop-compute-slave`, `apache-hadoop-plugin`, etc) into a single
+(`apache-hadoop-namenode`, `apache-hadoop-resourcemanager`,
+`apache-hadoop-slave`, `apache-hadoop-plugin`, etc) into a single
 directory and serve them all with a single `juju-resources serve` instance.
 
 
 ## Contact Information
 
-- <bigdata-dev@lists.launchpad.net>
+- <bigdata@lists.ubuntu.com>
 
 
 ## Resources
