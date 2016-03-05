@@ -102,12 +102,17 @@ class TestBundle(unittest.TestCase):
         NB: These are order-dependent, so must be done as part of a single test case.
         """
         jar_file = '/usr/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar'
+        tests_jar_file = '/usr/lib/hadoop/share/hadoop/common/hadoop-common-*-tests.jar'
+
         test_steps = [
             ('teragen',      "su ubuntu -c 'hadoop jar {} teragen  10000 /user/ubuntu/teragenout'".format(jar_file)),
             ('mapreduce #1', "su hdfs -c 'hdfs dfs -ls /user/ubuntu/teragenout/_SUCCESS'"),
             ('terasort',     "su ubuntu -c 'hadoop jar {} terasort /user/ubuntu/teragenout /user/ubuntu/terasortout'".
                 format(jar_file)),
             ('mapreduce #2', "su hdfs -c 'hdfs dfs -ls /user/ubuntu/terasortout/_SUCCESS'"),
+            ('test lzo', "su ubuntu -c 'hadoop jar {} org.apache.hadoop.io.TestSequenceFile -seed 0 \
+                -count 1000 -compressType RECORD xxx -codec org.apache.hadoop.io.compress.LzoCodec \
+                -check'".format(tests_jar_file)),
             ('cleanup',      "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/teragenout'"),
         ]
         for name, step in test_steps:
