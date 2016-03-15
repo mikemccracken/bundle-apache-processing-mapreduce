@@ -100,7 +100,8 @@ class TestBundle(unittest.TestCase):
             ('test lzo', "su ubuntu -c 'hadoop jar {} org.apache.hadoop.io.TestSequenceFile -seed 0 \
                 -count 1000 -compressType RECORD xxx -codec org.apache.hadoop.io.compress.LzoCodec \
                 -check'".format(tests_jar_file)),
-            ('cleanup',      "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/teragenout'"),
+            ('cleanup #1',   "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/teragenout'"),
+            ('cleanup #2',   "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/terasortout'"),
         ]
         for name, step in test_steps:
             output, retcode = self.client.run(step)
