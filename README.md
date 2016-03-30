@@ -46,6 +46,33 @@ the other services. To scale the cluster, use:
 This will add two additional slave nodes, for a total of five.
 
 
+### Verify the deployment
+
+The services provide extended status reporting to indicate when they are ready:
+
+    juju status --format=tabular
+
+This is particularly useful when combined with `watch` to track the on-going
+progress of the deployment:
+
+    watch -n 0.5 juju status --format=tabular
+
+The charms for each master component (namenode, resourcemanager)
+also each provide a `smoke-test` action that can be used to verify that each
+component is functioning as expected.  You can run them all and then watch the
+action status list:
+
+    juju action do namenode/0 smoke-test
+    juju action do resourcemanager/0 smoke-test
+    watch -n 0.5 juju action status
+
+Eventually, all of the actions should settle to `status: completed`.  If
+any go instead to `status: failed` then it means that component is not working
+as expected.  You can get more information about that component's smoke test:
+
+    juju action fetch <action-id>
+
+
 ## Deploying in Network-Restricted Environments
 
 The Apache Hadoop charms can be deployed in environments with limited network
