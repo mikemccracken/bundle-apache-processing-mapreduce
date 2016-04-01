@@ -32,7 +32,7 @@ demands.
 In this deployment, the aforementioned components are deployed on separate
 units. To deploy this bundle, simply use:
 
-    juju quickstart u/bigdata-dev/apache-core-batch-processing
+    juju quickstart apache-core-batch-processing
 
 See `juju quickstart --help` for deployment options, including machine
 constraints and how to deploy a locally modified version of the
