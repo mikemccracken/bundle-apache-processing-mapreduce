@@ -32,11 +32,10 @@ demands.
 In this deployment, the aforementioned components are deployed on separate
 units. To deploy this bundle, simply use:
 
-    juju quickstart apache-core-batch-processing
+    juju quickstart apache-processing-mapreduce
 
 See `juju quickstart --help` for deployment options, including machine
-constraints and how to deploy a locally modified version of the
-apache-core-batch-processing bundle.yaml.
+constraints and how to deploy a locally modified version of `bundle.yaml`.
 
 The default bundle deploys three slave nodes and one node of each of
 the other services. To scale the cluster, use:
@@ -114,10 +113,11 @@ directory and serve them all with a single `juju-resources serve` instance.
 
 
 ## Resources
+
 - [Apache Hadoop](http://hadoop.apache.org/) home page
 - [Apache Hadoop bug tracker](http://hadoop.apache.org/issue_tracking.html)
 - [Apache Hadoop mailing lists](http://hadoop.apache.org/mailing_lists.html)
 - [Apache Hadoop charms](http://jujucharms.com/?text=apache-hadoop)
-- [Juju Big Data bug tracker](https://bugs.launchpad.net/charms/+source/apache-core-batch-processing/+filebug)
+- [Bundle issue tracker](https://github.com/juju-solutions/bundle-apache-processing-mapreduce/issues)
 - [Juju mailing list](https://lists.ubuntu.com/mailman/listinfo/juju)
 - [Juju community](https://jujucharms.com/community)
