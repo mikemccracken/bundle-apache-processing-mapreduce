@@ -57,12 +57,12 @@ services:
       gui-x: "500"
       gui-y: "450"
   topbeat:
-    charm: "local:trusty/topbeat"
+    charm: cs:~containers/trusty/topbeat
     annotations:
       gui-x: "900"
       gui-y: "225"
   filebeat:
-    charm: "local:trusty/filebeat"
+    charm: cs:~containers/trusty/filebeat
     annotations:
       gui-x: "900"
       gui-y: "725"
