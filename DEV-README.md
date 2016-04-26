@@ -1,14 +1,15 @@
 # Overview
 
 This bundle provides a complete deployment of the core components of the Apache
-Hadoop platform.  This document describes how the components of this deployment
-are connected and how to connect additional services to the deployment to add
+Hadoop platform along with its monitoring facilities.  This document describes
+how the components of this deployment are connected and how to connect additional
+services to the deployment to add
 functionality.
 
 
 # Building on this Bundle
 
-This bundle supports two ways to extend its functionality via additonal charms:
+This bundle supports two ways to extend its functionality via additional charms:
 by relating to the subordinate `apache-hadoop-plugin` charm, or by using a
 stand-alone charm connecting to HDFS and YARN via standard relations.
 
@@ -51,26 +52,45 @@ this bundle, you would use:
 
     juju quickstart apache-core-batch-processing
     juju deploy cs:trusty/apache-hue
-    juju add-relation apache-hue hdfs-master
+    juju add-relation apache-hue plugin
 
 
 # Component Services
 
-This bundle deploys five services on a total of seven units
-(for detailed information, including relation specifications,
+This bundle deploys the following services:
+(For detailed information, including relation specifications,
 see each charm's DEV-README.md):
 
-* [**hdfs-master**](https://jujucharms.com/apache-hadoop-hdfs-master)
-  This service runs the NameNode component.
+* [**namenode**](https://jujucharms.com/apache-hadoop-hdfs-master)
+  The two units of this service provide the NameNode in an HA configuration.
 
-* [**secondary-namenode**](https://jujucharms.com/apache-hadoop-hdfs-secondary)
-  This service runs the Secondary NameNode component.
-
-* [**yarn-master**](https://jujucharms.com/apache-hadoop-yarn-master)
+* [**resourcemanager**](https://jujucharms.com/apache-hadoop-yarn-master)
   This service runs the ResourceManager component.
 
-* [**compute-slave**](https://jujucharms.com/apache-hadoop-compute-slave)
-  Each of the three units of this service runs both the DataNode and NodeManger components.
+* [**slave**](https://jujucharms.com/apache-hadoop-compute-slave)
+  The three units of this service run the DataNode, NodeManger, and JournalNode components.
 
-* [**client**](https://jujucharms.com/apache-hadoop-client)
-  This service provides an endpoint from which to run jobs, whether manually or via connected services.
+* [**plugin**](https://jujucharms.com/apache-hadoop-plugin)
+  This subordinate provides a consolidated connection point for Apache Hadoop, and provides
+  the Hadoop libaries and config for connected clients.
+
+* [**client**](https://jujucharms.com/hadoop-client)
+  This is a minimal client, which serves as a gateway node.
+
+* [**zookeeper**](https://jujucharms.com/apache-zookeeper)
+  The three units of this service provide automatic fail-over for the NameNode.
+
+* [**ganglia**](https://jujucharms.com/ganglia)
+  This service provides the UI for monitoring.
+
+* [**ganglia-node**](https://jujucharms.com/ganglia-node)
+  This subordinate collects system-level monitoring data from each node.
+
+* [**rsyslog-forwarder-ha**](https://jujucharms.com/rsyslog-forwarder-ha)
+  This subordinate forwards logs from each node to flume-syslog.
+
+* [**flume-syslog**](https://jujucharms.com/apache-flume-syslog)
+  This service collects the logs in preparation for ingesting them into HDFS.
+
+* [**flume-hdfs**](https://jujucharms.com/apache-flume-hdfs)
+  This service takes the logs from flume-syslog and ingests them into HDFS.
