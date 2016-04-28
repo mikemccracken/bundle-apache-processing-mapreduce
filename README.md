@@ -6,9 +6,9 @@ using a simple programming model.
 
 It is designed to scale up from single servers to thousands of machines,
 each offering local computation and storage. Rather than rely on hardware
-to deliver high-avaiability, the library itself is designed to detect
+to deliver high-availability, the library itself is designed to detect
 and handle failures at the application layer, so delivering a
-highly-availabile service on top of a cluster of computers, each of
+highly-available service on top of a cluster of computers, each of
 which may be prone to failures.
 
 This bundle provides a complete deployment of the core components of the
@@ -20,7 +20,12 @@ include:
   * ResourceManager (Yarn)
   * Slaves (DataNode and NodeManager)
   * Client (example and node for manually running jobs from)
-    - Plugin (colocated on the Client)
+    - Plugin (collocated on the Client)
+
+This bundle also includes the following services for monitoring an analytics:
+
+  * Ganglia (monitoring UI)
+  * Flume Syslog & Flume HDFS (collect logs and ingest into HDFS for analysis)
 
 Deploying this bundle gives you a fully configured and connected Apache Hadoop
 cluster on any supported cloud, which can be easily scaled to meet workload
@@ -70,6 +75,11 @@ any go instead to `status: failed` then it means that component is not working
 as expected.  You can get more information about that component's smoke test:
 
     juju action fetch <action-id>
+
+Monitoring is provided by the Ganglia, which is available at
+`http://<ganglia-host>/ganglia` where `<ganglia-host>` can be discovered from
+`juju status`.  The logs from all nodes are also ingested into HDFS and can
+be analyzed using Yarn and map-reduce jobs.
 
 
 ## Deploying in Network-Restricted Environments
