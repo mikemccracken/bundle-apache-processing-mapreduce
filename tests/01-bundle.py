@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import unittest
 
 import yaml
@@ -8,7 +9,7 @@ import amulet
 
 
 class TestBundle(unittest.TestCase):
-    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle.yaml')
+    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle-local.yaml')
 
     @classmethod
     def setUpClass(cls):
@@ -20,19 +21,30 @@ class TestBundle(unittest.TestCase):
         bundle = yaml.safe_load(bun)
         cls.d.load(bundle)
         cls.d.setup(timeout=1800)
-        cls.d.sentry.wait_for_messages({'plugin': 'Ready (HDFS & YARN)'}, timeout=1800)
-        cls.hdfs = cls.d.sentry['namenode'][0]
+        cls.d.sentry.wait_for_messages({
+            'plugin': 'Ready (HDFS & YARN)',
+            'namenode': [
+                'Ready (3 DataNodes, HA active, with automatic fail-over)',
+                'Ready (3 DataNodes, HA standby, with automatic fail-over)',
+            ]
+        }, timeout=1800)
+        for unit_name, unit_status in cls.d.sentry.get_status()['namenode'].items():
+            if 'active' in unit_status['workload-status']['message']:
+                cls.hdfs_active = cls.d.sentry.unit[unit_name]
+            else:
+                cls.hdfs_standby = cls.d.sentry.unit[unit_name]
         cls.yarn = cls.d.sentry['resourcemanager'][0]
-        cls.slave = cls.d.sentry['slave'][0]
+        cls.slaves = cls.d.sentry['slave']
         cls.client = cls.d.sentry['client'][0]
+        cls.plugins = cls.d.sentry['plugin']
 
     def test_components(self):
         """
         Confirm that all of the required components are up and running.
         """
-        hdfs, retcode = self.hdfs.run("pgrep -a java")
+        hdfs, retcode = self.hdfs_active.run("pgrep -a java")
         yarn, retcode = self.yarn.run("pgrep -a java")
-        slave, retcode = self.slave.run("pgrep -a java")
+        slave, retcode = self.slaves[0].run("pgrep -a java")
         client, retcode = self.client.run("pgrep -a java")
 
         # .NameNode needs the . to differentiate it from SecondaryNameNode
@@ -106,6 +118,114 @@ class TestBundle(unittest.TestCase):
         for name, step in test_steps:
             output, retcode = self.client.run(step)
             assert retcode == 0, "{} FAILED:\n{}".format(name, output)
+
+    def _hdfs_write_file(self):
+        test_steps = [
+            ('create_file', "su ubuntu -c 'echo test-file-contents > /tmp/testfile'"),
+            ('write_file',  "su ubuntu -c 'hdfs dfs -put /tmp/testfile'"),
+        ]
+        for name, step in test_steps:
+            output, retcode = self.client.run(step)
+            assert retcode == 0, "{} FAILED:\n{}".format(name, output)
+
+    def _hdfs_read_file(self):
+        output, retcode = self.client.run("su ubuntu -c 'hdfs dfs -cat testfile'")
+        assert retcode == 0, "HDFS READ FILE FAILED ({}): {}".format(retcode, output)
+        self.assertIn('test-file-contents', output)
+
+    def test_create_file(self):
+        self._hdfs_write_file()
+        self._hdfs_read_file()
+
+    def _do(self, unit, action):
+        unit_name = unit.info['unit_name']
+        action_id = self.d.action_do(unit_name, action)
+        return self.d.action_fetch(action_id)  # wait for action to complete
+        # Bug in amulet: if an action doesn't set any values, there's no
+        # way to detect success / failure / timeout.  Even if it does set
+        # a value, there's no way to distinguish action failure from timeout.
+
+    def test_failover(self):
+        """
+        Confirm that automatic fail-over is working for the NameNode.
+        """
+        self._do(self.hdfs_active, 'stop-namenode')
+        self.d.sentry.wait_for_messages({
+            'namenode': [
+                'Ready (3 DataNodes, HA degraded down (missing: standby), with automatic fail-over)',
+                'Ready (3 DataNodes, HA degraded active (missing: standby), with automatic fail-over)',
+            ]
+        }, timeout=1800)
+        self._hdfs_read_file()
+        self._do(self.hdfs_active, 'start-namenode')
+        self.d.sentry.wait_for_messages({
+            'namenode': [
+                'Ready (3 DataNodes, HA active, with automatic fail-over)',
+                'Ready (3 DataNodes, HA standby, with automatic fail-over)',
+            ]
+        }, timeout=1800)
+        (self.hdfs_active, self.hdfs_standby) = (self.hdfs_standby, self.hdfs_active)
+        self._hdfs_read_file()
+
+    def test_upgrade(self):
+        for service in ('namenode', 'resourcemanager', 'slave', 'plugin'):
+            # the newest supported version is the default, so test by
+            # "upgrading" to a lower version
+            self.d.configure(service, {'hadoop_version': '2.7.1'})
+        self._do(self.hdfs_active, 'prepare-upgrade')
+        try:
+            # wait for upgrade image to complete
+            for i in amulet.helpers.timeout_gen(5*60):
+                if yaml.load(self._do(self.hdfs_active, 'query').get('ready', 'false')):
+                    break
+        except amulet.helpers.TimeoutError:
+            self.fail('Timed out waiting for upgrade image')
+        self._do(self.hdfs_standby, 'upgrade')
+        self._do(self.hdfs_active, 'upgrade')
+        self._do(self.yarn, 'upgrade')
+        for plugin in self.plugins:
+            self._do(plugin, 'upgrade')
+        self._do(self.slaves[0], 'upgrade')
+        self._do(self.slaves[1], 'upgrade')
+        # skip third slave to test partial upgrade
+        self.d.sentry.wait_for_messages({
+            'namenode': [
+                'Ready (3 DataNodes, HA active, with automatic fail-over)',
+                'Ready (3 DataNodes, HA standby, with automatic fail-over)',
+            ],
+            'resourcemanager': 'Ready (3 NodeManagers)',
+            'plugin': 'Ready (HDFS & YARN)',
+            'slave': [
+                'Ready (DataNode & NodeManager)',
+                'Ready (DataNode & NodeManager)',
+                re.compile(r"Spec mismatch with (NameNode|ResourceManager): "
+                           "{'hadoop': '2.7.2'}"
+                           " != "
+                           "{'hadoop': '2.7.1'}"),
+            ],
+        }, timeout=1800)
+        # finish upgrade
+        self._do(self.slaves[2], 'upgrade')
+        self.d.sentry.wait_for_messages({
+            'slave': 'Ready (DataNode & NodeManager)',
+        }, timeout=1800)
+        # test downgrade on plugin
+        self.d.configure('plugin', {'hadoop_version': '2.7.2'})
+        self._do(self.plugins[0], 'downgrade')  # revert back to original version
+        self.d.sentry.wait_for_messages({
+            'plugin': {re.compile(r"Spec mismatch with (NameNode|ResourceManager): "
+                                  "{'hadoop': '2.7.2'}"
+                                  " != "
+                                  "{'hadoop': '2.7.1'}")},
+        }, timeout=1800)
+        # re-upgrade plugin
+        self.d.configure('plugin', {'hadoop_version': '2.7.1'})
+        self._do(self.plugins[0], 'downgrade')  # revert back to new version
+        self.d.sentry.wait_for_messages({
+            'plugin': 'Ready (HDFS & YARN)',
+        }, timeout=1800)
+        self._do(self.hdfs_active, 'finalize')
+        self._hdfs_read_file()
 
 
 if __name__ == '__main__':
