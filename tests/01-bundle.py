@@ -9,7 +9,7 @@ import amulet
 
 
 class TestBundle(unittest.TestCase):
-    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle-local.yaml')
+    bundle_file = os.path.join(os.path.dirname(__file__), '..', 'bundle.yaml')
 
     @classmethod
     def setUpClass(cls):
@@ -103,7 +103,10 @@ class TestBundle(unittest.TestCase):
         jar_file = '/usr/lib/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar'
         tests_jar_file = '/usr/lib/hadoop/share/hadoop/common/hadoop-common-*-tests.jar'
 
-        test_steps = [
+        output, retcode = self.yarn.run("grep -q hadoop-lzo- /etc/environment")
+        has_lzo = (retcode == 0)
+
+        test_steps = filter(None, [
             ('teragen',      "su ubuntu -c 'hadoop jar {} teragen  10000 /user/ubuntu/teragenout'".format(jar_file)),
             ('mapreduce #1', "su hdfs -c 'hdfs dfs -ls /user/ubuntu/teragenout/_SUCCESS'"),
             ('terasort',     "su ubuntu -c 'hadoop jar {} terasort /user/ubuntu/teragenout /user/ubuntu/terasortout'".
@@ -111,10 +114,10 @@ class TestBundle(unittest.TestCase):
             ('mapreduce #2', "su hdfs -c 'hdfs dfs -ls /user/ubuntu/terasortout/_SUCCESS'"),
             ('test lzo', "su ubuntu -c 'hadoop jar {} org.apache.hadoop.io.TestSequenceFile -seed 0 \
                 -count 1000 -compressType RECORD xxx -codec org.apache.hadoop.io.compress.LzoCodec \
-                -check'".format(tests_jar_file)),
+                -check'".format(tests_jar_file)) if has_lzo else None,
             ('cleanup #1',   "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/teragenout'"),
             ('cleanup #2',   "su hdfs -c 'hdfs dfs -rm -r /user/ubuntu/terasortout'"),
-        ]
+        ])
         for name, step in test_steps:
             output, retcode = self.client.run(step)
             assert retcode == 0, "{} FAILED:\n{}".format(name, output)
