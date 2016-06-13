@@ -1,6 +1,6 @@
 services:
   zookeeper:
-    charm: cs:trusty/apache-zookeeper-2
+    charm: cs:trusty/apache-zookeeper-3
     num_units: 3
     annotations:
       gui-x: "250"
@@ -55,7 +55,7 @@ services:
       gui-x: "750"
       gui-y: "400"
   rsyslog-forwarder-ha:
-    charm: cs:trusty/rsyslog-forwarder-ha-8
+    charm: cs:trusty/rsyslog-forwarder-ha-9
     options:
       watch-files: >
         /var/log/hadoop/hdfs/*.log
@@ -65,7 +65,7 @@ services:
       gui-x: "500"
       gui-y: "400"
   flume-syslog:
-    charm: cs:trusty/apache-flume-syslog-4
+    charm: cs:trusty/apache-flume-syslog-5
     num_units: 1
     annotations:
       gui-x: "500"
