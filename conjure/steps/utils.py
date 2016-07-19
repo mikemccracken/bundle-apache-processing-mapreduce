@@ -43,7 +43,9 @@ def run_smoke_test(service):
                 success(completed_msg)
             if results.get('outcome', None):
                 is_complete = True
-                completed_msg = ": (result) {}".format(results.get('outcome'))
+                completed_msg = "{}: (result) {}".format(
+                    completed_msg,
+                    results.get('outcome'))
                 success(completed_msg)
     fail("There is an unknown issue with running the smoke-test, "
          "please have a look at `juju show-action-status`")
